@@ -173,7 +173,7 @@ sovereign-rag-stack/
 
 ## Authentication
 
-Web mode uses [Clerk](https://clerk.com) for authentication[web:24]:
+Web mode uses [Clerk](https://clerk.com) for authentication:
 
 - Email/password signup
 - OAuth (Google, GitHub)
@@ -342,6 +342,13 @@ No configuration needed. Sync happens automatically:
 - **Local**: Windows ACLs + encrypted storage
 - **Sync**: GitHub encrypted transport
 - **API**: JWT tokens + rate limiting
+
+## References
+
+Key resources for this project:
+
+- [mem0 (Memory Layer)](https://github.com/ValoLoco/mem0.git) - Forked memory management system for persistent AI context
+- [skills.sh](https://skills.sh/) - MCP skill building and deployment platform
 
 ## Roadmap
 
