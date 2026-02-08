@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,12 +15,8 @@ interface SidebarProps {
 }
 
 const models = [
-  { id: 'ollama/llama3.3', name: 'Llama 3.3 70B', provider: 'Ollama' },
-  { id: 'ollama/qwen2.5-coder', name: 'Qwen 2.5 Coder 32B', provider: 'Ollama' },
-  { id: 'anthropic/claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { id: 'anthropic/claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'Anthropic' },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
+  { id: 'ollama/llama3.3', name: 'Llama 3.3', provider: 'Ollama' },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
 ];
 
 export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: SidebarProps) {
@@ -41,7 +38,13 @@ export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: Sideb
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-          <h2 className="font-semibold">flipadonga</h2>
+          <Image
+            src="/flipadonga-logo.jpg"
+            alt="Flipadonga"
+            width={100}
+            height={34}
+            className="h-7 w-auto"
+          />
           <Button
             variant="ghost"
             size="icon"

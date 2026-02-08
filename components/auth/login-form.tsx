@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 
 export function LoginForm() {
   const router = useRouter();
@@ -41,46 +42,59 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@buenatura.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoFocus
-          autoComplete="email"
+    <div className="space-y-6">
+      <div className="flex justify-center">
+        <Image
+          src="/flipadonga-logo.jpg"
+          alt="Flipadonga"
+          width={200}
+          height={67}
+          className="h-16 w-auto"
+          priority
         />
       </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@buenatura.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoFocus
+            autoComplete="email"
+          />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-        />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      )}
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        )}
 
-      <Button 
-        type="submit" 
-        className="w-full" 
-        disabled={isLoading}
-      >
-        {isLoading ? 'Signing in...' : 'Sign in'}
-      </Button>
-    </form>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </form>
+    </div>
   );
 }

@@ -3,6 +3,7 @@
 import { Menu, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
+import Image from 'next/image';
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
@@ -24,9 +25,16 @@ export function ChatHeader({ onToggleSidebar, onNewChat }: ChatHeaderProps) {
             <span className="sr-only">Toggle sidebar</span>
           </Button>
           
-          <h1 className="text-xl font-semibold tracking-tight">
-            flipadonga
-          </h1>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/flipadonga-logo.jpg"
+              alt="Flipadonga"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
