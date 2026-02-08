@@ -14,7 +14,7 @@ interface ChatInputProps {
 export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const textareaRef = useRef<HTMLTextareaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
