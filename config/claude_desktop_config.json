@@ -1,12 +1,25 @@
 {
   "mcpServers": {
-    "buenatura-sovereign-rag": {
-      "command": "C:\\BUENATURA\\venv\\Scripts\\python.exe",
-      "args": ["C:\\BUENATURA\\mcp\\buenatura_rag_server.py"],
+    "buenatura-memory": {
+      "command": "python",
+      "args": [
+        "C:\\path\\to\\sovereign-rag-stack\\mcp\\memory_server.py"
+      ],
       "env": {
-        "PYTHONPATH": "C:\\BUENATURA",
+        "ANTHROPIC_API_KEY": "your-api-key-here",
+        "VECTOR_DB_PATH": "C:\\BUENATURA\\vectors",
+        "MEM0_USE_LOCAL": "true"
+      }
+    },
+    "buenatura-rag": {
+      "command": "python",
+      "args": [
+        "C:\\path\\to\\sovereign-rag-stack\\mcp\\buenatura_rag_server.py"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "your-api-key-here",
         "RAG_DATA_DIR": "C:\\BUENATURA\\knowledge",
-        "RAG_DB_DIR": "C:\\BUENATURA\\mem0\\vectors"
+        "RAG_DB_DIR": "C:\\BUENATURA\\vectors"
       }
     }
   }
