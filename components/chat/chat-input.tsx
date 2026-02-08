@@ -5,9 +5,10 @@ import { Paperclip, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { getSettings } from '@/lib/settings';
 
 interface ChatInputProps {
-  onSendMessage: (content: string, files?: File[]) => void;
+  onSendMessage: (content: string, files?: File[], settings?: any) => void;
   disabled?: boolean;
 }
 
@@ -28,7 +29,17 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
     e.preventDefault();
     if (!input.trim() && files.length === 0) return;
 
-    onSendMessage(input.trim(), files);
+    const settings = getSettings();
+    
+    onSendMessage(input.trim(), files, {
+      model: settings.selectedModel,
+      ollamaEndpointOverride: settings.ollamaEndpoint,
+      apiKeysPresent: {
+        anthropic: !!settings.anthropicApiKey,
+        openai: !!settings.openaiApiKey
+      }
+    });
+    
     setInput('');
     setFiles([]);
   };
