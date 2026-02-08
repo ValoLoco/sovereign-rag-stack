@@ -1,0 +1,13 @@
+# Python backend files (not needed for frontend deployment)
+lib/*.py
+mcp/
+integrations/*.py
+scripts/*.py
+examples/*.py
+config/*.json
+api/server.py
+
+# Keep only TypeScript/JavaScript
+!lib/utils.ts
+!lib/*.ts
+!lib/*.tsx
