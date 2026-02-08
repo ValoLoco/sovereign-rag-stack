@@ -45,7 +45,7 @@ export function LoginForm() {
     <div className="space-y-6">
       <div className="flex justify-center">
         <Image
-          src="/flipadonga-logo.png"
+          src="/Flipadonga_logo.png"
           alt="Flipadonga"
           width={200}
           height={67}

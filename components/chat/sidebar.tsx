@@ -39,7 +39,7 @@ export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: Sideb
       >
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
           <Image
-            src="/flipadonga-logo.png"
+            src="/Flipadonga_logo.png"
             alt="Flipadonga"
             width={100}
             height={34}

@@ -27,7 +27,7 @@ export function ChatHeader({ onToggleSidebar, onNewChat }: ChatHeaderProps) {
           
           <div className="flex items-center gap-2">
             <Image
-              src="/flipadonga-logo.png"
+              src="/Flipadonga_logo.png"
               alt="Flipadonga"
               width={120}
               height={40}
