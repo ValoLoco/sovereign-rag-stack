@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 
 interface Settings {
   anthropicApiKey: string;
+  openaiApiKey: string;
   ollamaEndpoint: string;
   ragEnabled: boolean;
   memoryEnabled: boolean;
@@ -19,11 +19,13 @@ export default function SettingsPage() {
   const router = useRouter();
   const [settings, setSettings] = useState<Settings>({
     anthropicApiKey: '',
+    openaiApiKey: '',
     ollamaEndpoint: 'http://localhost:11434',
     ragEnabled: true,
     memoryEnabled: true,
   });
-  const [showApiKey, setShowApiKey] = useState(false);
+  const [showAnthropicKey, setShowAnthropicKey] = useState(false);
+  const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -65,7 +67,7 @@ export default function SettingsPage() {
                 <div className="relative">
                   <Input
                     id="anthropic-key"
-                    type={showApiKey ? 'text' : 'password'}
+                    type={showAnthropicKey ? 'text' : 'password'}
                     placeholder="sk-ant-..."
                     value={settings.anthropicApiKey}
                     onChange={(e) => setSettings({ ...settings, anthropicApiKey: e.target.value })}
@@ -73,14 +75,14 @@ export default function SettingsPage() {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowApiKey(!showApiKey)}
+                    onClick={() => setShowAnthropicKey(!showAnthropicKey)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
                   >
-                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showAnthropicKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Get your API key from{' '}
+                  For Claude models. Get your key from{' '}
                   <a
                     href="https://console.anthropic.com/settings/keys"
                     target="_blank"
@@ -88,6 +90,38 @@ export default function SettingsPage() {
                     className="text-neutral-900 dark:text-neutral-100 hover:underline"
                   >
                     console.anthropic.com
+                  </a>
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="openai-key">OpenAI API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="openai-key"
+                    type={showOpenAIKey ? 'text' : 'password'}
+                    placeholder="sk-..."
+                    value={settings.openaiApiKey}
+                    onChange={(e) => setSettings({ ...settings, openaiApiKey: e.target.value })}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOpenAIKey(!showOpenAIKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                  >
+                    {showOpenAIKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  For GPT models. Get your key from{' '}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neutral-900 dark:text-neutral-100 hover:underline"
+                  >
+                    platform.openai.com
                   </a>
                 </p>
               </div>
@@ -102,7 +136,8 @@ export default function SettingsPage() {
                   onChange={(e) => setSettings({ ...settings, ollamaEndpoint: e.target.value })}
                 />
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Local Ollama server or remote endpoint. Make sure Ollama is running.
+                  Local: <code className="px-1 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded">http://localhost:11434</code><br />
+                  Remote: Use your Tailscale IP or VPS endpoint
                 </p>
               </div>
             </div>
@@ -140,6 +175,21 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </label>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Multi-Model Setup</h2>
+            <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+              <p>
+                <strong className="text-neutral-900 dark:text-neutral-100">Chat + Workers:</strong> Run multiple models in parallel for specialized tasks
+              </p>
+              <p>
+                <strong className="text-neutral-900 dark:text-neutral-100">RALPH Loop:</strong> Iterative refinement using the same model multiple times
+              </p>
+              <p className="text-xs mt-2">
+                Configure in chat interface via advanced options (coming soon)
+              </p>
             </div>
           </section>
 

@@ -14,8 +14,12 @@ interface SidebarProps {
 }
 
 const models = [
-  { id: 'ollama/llama3.3', name: 'Llama 3.3', provider: 'Ollama' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
+  { id: 'ollama/llama3.3', name: 'Llama 3.3 70B', provider: 'Ollama' },
+  { id: 'ollama/qwen2.5-coder', name: 'Qwen 2.5 Coder 32B', provider: 'Ollama' },
+  { id: 'anthropic/claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
+  { id: 'anthropic/claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'Anthropic' },
+  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
 ];
 
 export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: SidebarProps) {
