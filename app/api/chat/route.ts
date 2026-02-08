@@ -4,19 +4,30 @@ import type { LLMMessage } from '@/lib/llm-providers';
 
 export async function POST(request: Request) {
   try {
-    const { message, model, mode = 'chat', workerModels = [], ralphIterations = 3 } = await request.json();
+    const { 
+      message, 
+      model, 
+      mode = 'chat', 
+      workerModels = [], 
+      ralphIterations = 3,
+      settings = {}
+    } = await request.json();
 
+    const ollamaEndpoint = settings.ollamaEndpointOverride || process.env.OLLAMA_ENDPOINT || 'http://localhost:11434';
+    
     const config = {
-      ollamaEndpoint: process.env.OLLAMA_ENDPOINT || 'http://localhost:11434',
-      anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-      openaiApiKey: process.env.OPENAI_API_KEY,
+      ollamaEndpoint,
+      anthropicApiKey: settings.anthropicApiKey || process.env.ANTHROPIC_API_KEY,
+      openaiApiKey: settings.openaiApiKey || process.env.OPENAI_API_KEY,
     };
+
+    console.log('[API] Using endpoint:', ollamaEndpoint.substring(0, 30) + '...');
+    console.log('[API] Model requested:', model);
 
     const messages: LLMMessage[] = [
       { role: 'user', content: message },
     ];
 
-    // Simple chat mode (default)
     if (mode === 'chat') {
       const provider = createProvider(model, config);
       const response = await provider.generate(messages);
@@ -28,7 +39,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // Multi-model worker mode
     if (mode === 'workers') {
       const chatProvider = createProvider(model, config);
       const workers = workerModels.map((m: string) => createProvider(m, config));
@@ -46,7 +56,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // RALPH loop mode
     if (mode === 'ralph') {
       const provider = createProvider(model, config);
       const orchestrator = new MultiModelOrchestrator(provider);
@@ -66,9 +75,13 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('[API] Chat error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate response' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to generate response',
+        model: model || 'unknown',
+        endpoint: ollamaEndpoint?.substring(0, 30) || 'unknown'
+      },
       { status: 500 }
     );
   }
