@@ -32,7 +32,6 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Call API
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,6 +60,10 @@ export default function ChatPage() {
     }
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950">
       <Sidebar 
@@ -71,7 +74,10 @@ export default function ChatPage() {
       />
 
       <div className="flex-1 flex flex-col">
-        <ChatHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <ChatHeader 
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onNewChat={handleNewChat}
+        />
         
         <ChatMessages messages={messages} isLoading={isLoading} />
         
