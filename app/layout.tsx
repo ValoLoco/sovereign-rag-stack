@@ -1,22 +1,22 @@
-import './globals.css'
-import { ClerkProvider } from '@clerk/nextjs'
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Sovereign RAG Stack',
-  description: 'Hybrid local/cloud AI with full data sovereignty',
-}
+  title: 'flipadonga | Sovereign RAG Stack',
+  description: 'Local-first RAG with full data sovereignty',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
-  )
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
 }
