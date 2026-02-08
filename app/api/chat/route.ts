@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/dal';
 import { createProvider, MultiModelOrchestrator } from '@/lib/llm-providers';
 import type { LLMMessage } from '@/lib/llm-providers';
 import { searchDocuments } from '@/lib/documents';
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { 
       message, 
       model, 
@@ -23,6 +33,7 @@ export async function POST(request: Request) {
       openaiApiKey: settings.openaiApiKey || process.env.OPENAI_API_KEY,
     };
 
+    console.log('[API] User:', session.email);
     console.log('[API] Using endpoint:', ollamaEndpoint.substring(0, 30) + '...');
     console.log('[API] Model requested:', model);
     console.log('[API] RAG enabled:', ragEnabled);
@@ -108,12 +119,17 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     console.error('[API] Chat error:', error);
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : 'Failed to generate response',
-        model: model || 'unknown',
-        endpoint: ollamaEndpoint?.substring(0, 30) || 'unknown'
       },
       { status: 500 }
     );
