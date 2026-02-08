@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Enable experimental features
+  // Experimental features
   experimental: {
     typedRoutes: true,
   },
@@ -14,7 +14,16 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
 
-  // Environment variables available to the browser
+  // Ignore Python files during build
+  webpack: (config, { isServer }) => {
+    config.module.rules.push({
+      test: /\.py$/,
+      loader: 'ignore-loader'
+    });
+    return config;
+  },
+
+  // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   },
