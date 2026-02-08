@@ -348,6 +348,8 @@ No configuration needed. Sync happens automatically:
 Key resources for this project:
 
 - [mem0 (Memory Layer)](https://github.com/ValoLoco/mem0.git) - Forked memory management system for persistent AI context
+- [goose](https://github.com/ValoLoco/goose.git) - AI agent toolkit for autonomous task execution
+- [eigent](https://github.com/ValoLoco/eigent.git) - Entity graph and knowledge representation system
 - [skills.sh](https://skills.sh/) - MCP skill building and deployment platform
 
 ## Roadmap
