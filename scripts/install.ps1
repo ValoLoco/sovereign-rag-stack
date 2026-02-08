@@ -1,82 +1,80 @@
-# Sovereign RAG Stack Installation Script
-# Run as Administrator
+# Sovereign RAG Stack - Windows Installation Script
+# Run as: .\scripts\install.ps1
 
-Write-Host "🚀 Installing Sovereign RAG Stack..." -ForegroundColor Cyan
+Write-Host "=================================" -ForegroundColor Cyan
+Write-Host "Sovereign RAG Stack Installer" -ForegroundColor Cyan
+Write-Host "=================================" -ForegroundColor Cyan
+Write-Host ""
 
-$basePath = "C:\BUENATURA"
-
-# Create directory structure
-Write-Host "\n📁 Creating directories..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path "$basePath\mem0\vectors" | Out-Null
-New-Item -ItemType Directory -Force -Path "$basePath\knowledge" | Out-Null
-New-Item -ItemType Directory -Force -Path "$basePath\mcp" | Out-Null
-New-Item -ItemType Directory -Force -Path "$basePath\workflows" | Out-Null
-New-Item -ItemType Directory -Force -Path "$basePath\logs" | Out-Null
-
-# Create Python virtual environment
-Write-Host "\n🐍 Creating Python environment..." -ForegroundColor Yellow
-Set-Location $basePath
-python -m venv venv
-& "$basePath\venv\Scripts\Activate.ps1"
-
-# Install dependencies
-Write-Host "\n📦 Installing dependencies..." -ForegroundColor Yellow
-pip install --upgrade pip
-pip install mem0ai
-pip install langchain-anthropic
-pip install langgraph
-pip install chromadb
-pip install lancedb
-pip install sentence-transformers
-pip install python-dotenv
-pip install fastmcp
-
-# Copy MCP server
-Write-Host "\n📥 Copying MCP server..." -ForegroundColor Yellow
-Copy-Item -Path "..\mcp\buenatura_rag_server.py" -Destination "$basePath\mcp\" -Force
-
-# Create .env file
-Write-Host "\n⚙️ Creating configuration..." -ForegroundColor Yellow
-$envContent = @"
-ANTHROPIC_API_KEY=your_api_key_here
-RAG_DATA_DIR=C:\BUENATURA\knowledge
-RAG_DB_DIR=C:\BUENATURA\mem0\vectors
-MEM0_DB_PATH=C:\BUENATURA\mem0\vectors\memory.db
-LOG_DIR=C:\BUENATURA\logs
-VECTOR_STORE=lancedb
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-MEM0_HISTORY_LIMIT=10
-MEM0_RELEVANCE_THRESHOLD=0.7
-"@
-
-$envContent | Out-File -FilePath "$basePath\.env" -Encoding utf8
-
-# Configure Claude Desktop
-Write-Host "\n🤖 Configuring Claude Desktop..." -ForegroundColor Yellow
-$claudeConfigPath = "$env:APPDATA\Claude"
-New-Item -ItemType Directory -Force -Path $claudeConfigPath | Out-Null
-
-$claudeConfig = @"
-{
-  "mcpServers": {
-    "buenatura-sovereign-rag": {
-      "command": "C:\\BUENATURA\\venv\\Scripts\\python.exe",
-      "args": ["C:\\BUENATURA\\mcp\\buenatura_rag_server.py"],
-      "env": {
-        "PYTHONPATH": "C:\\BUENATURA",
-        "RAG_DATA_DIR": "C:\\BUENATURA\\knowledge",
-        "RAG_DB_DIR": "C:\\BUENATURA\\mem0\\vectors"
-      }
-    }
-  }
+# Check Python
+Write-Host "[1/6] Checking Python..." -ForegroundColor Yellow
+$pythonVersion = python --version 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "✗ Python not found. Install Python 3.11+ from python.org" -ForegroundColor Red
+    exit 1
 }
-"@
+Write-Host "✓ $pythonVersion" -ForegroundColor Green
 
-$claudeConfig | Out-File -FilePath "$claudeConfigPath\claude_desktop_config.json" -Encoding utf8
+# Create virtual environment
+Write-Host ""
+Write-Host "[2/6] Creating virtual environment..." -ForegroundColor Yellow
+if (Test-Path ".venv") {
+    Write-Host "✓ Virtual environment already exists" -ForegroundColor Green
+} else {
+    python -m venv .venv
+    Write-Host "✓ Virtual environment created" -ForegroundColor Green
+}
 
-Write-Host "\n✅ Installation complete!" -ForegroundColor Green
-Write-Host "\nNext steps:" -ForegroundColor Cyan
-Write-Host "1. Edit C:\BUENATURA\.env and add your Anthropic API key" -ForegroundColor White
-Write-Host "2. Run: python test_setup.py" -ForegroundColor White
-Write-Host "3. Open Claude Desktop" -ForegroundColor White
-Write-Host "\n🚀 Ready for sovereign AI!" -ForegroundColor Green
+# Activate virtual environment
+Write-Host ""
+Write-Host "[3/6] Activating virtual environment..." -ForegroundColor Yellow
+& ".venv\Scripts\Activate.ps1"
+Write-Host "✓ Virtual environment activated" -ForegroundColor Green
+
+# Install MCP dependencies
+Write-Host ""
+Write-Host "[4/6] Installing MCP dependencies..." -ForegroundColor Yellow
+pip install -r mcp/requirements.txt
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "✗ Failed to install dependencies" -ForegroundColor Red
+    exit 1
+}
+Write-Host "✓ Dependencies installed" -ForegroundColor Green
+
+# Create data directories
+Write-Host ""
+Write-Host "[5/6] Creating data directories..." -ForegroundColor Yellow
+$dataDir = "C:\BUENATURA"
+if (-not (Test-Path $dataDir)) {
+    New-Item -ItemType Directory -Path $dataDir | Out-Null
+    New-Item -ItemType Directory -Path "$dataDir\vectors" | Out-Null
+    New-Item -ItemType Directory -Path "$dataDir\knowledge" | Out-Null
+    New-Item -ItemType Directory -Path "$dataDir\conversations" | Out-Null
+    Write-Host "✓ Created $dataDir" -ForegroundColor Green
+} else {
+    Write-Host "✓ $dataDir already exists" -ForegroundColor Green
+}
+
+# Setup environment file
+Write-Host ""
+Write-Host "[6/6] Setting up environment..." -ForegroundColor Yellow
+if (-not (Test-Path ".env")) {
+    Copy-Item ".env.example" ".env"
+    Write-Host "✓ Created .env file" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "⚠ IMPORTANT: Edit .env and add your ANTHROPIC_API_KEY" -ForegroundColor Yellow
+} else {
+    Write-Host "✓ .env file exists" -ForegroundColor Green
+}
+
+Write-Host ""
+Write-Host "=================================" -ForegroundColor Cyan
+Write-Host "✓ Installation Complete!" -ForegroundColor Green
+Write-Host "=================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor Cyan
+Write-Host "1. Edit .env and add your API keys"
+Write-Host "2. Test CLI: python scripts/cli.py collections"
+Write-Host "3. Configure Claude Desktop with config/claude_desktop_config.json"
+Write-Host ""
+Write-Host "Documentation: docs/local-setup.md" -ForegroundColor Gray
