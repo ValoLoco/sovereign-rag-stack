@@ -1,378 +1,186 @@
 # Sovereign RAG Stack
 
-> Hybrid local/cloud AI infrastructure with full data sovereignty. Run locally on Windows OR access via web on flipadonga.com when traveling.
+> Current state. Production ready web interface for a sovereign RAG stack. Future ready for hybrid local + cloud once the Python backend and sync layer are wired in.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)](https://vercel.com)
 
-## Overview
+## What exists today
 
-Sovereign RAG Stack runs in two modes with automatic synchronization:
+This repository currently ships a **focused** Next.js 15 app:
 
-1. **Local Mode** (Home/Office) - Full sovereignty, Windows native, Claude Desktop integration
-2. **Web Mode** (Travel) - Vercel-hosted at flipadonga.com, authenticated access, cloud-synced state
+- Login at `/login` with a simple email allowlist + shared password
+- Protected chat interface at `/chat`
+- Clean, Perplexity style UI with file upload, model toggles, and connector switches
+- Deployed on Vercel with your custom domain managed via Squarespace DNS
 
-### Architecture
+The local Python RAG server, mem0 memory layer, LanceDB store, and GitHub sync daemon described in the original design are **not yet wired up** in this repo. They remain part of the architecture vision and roadmap.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  HYBRID ARCHITECTURE                            │
-└─────────────────────────────────────────────────────────────────┘
+## Architecture snapshot
 
-┌──────────────────────────────┐    ┌─────────────────────────────┐
-│   LOCAL MODE (Windows PC)    │    │   WEB MODE (flipadonga.com) │
-│                              │    │                             │
-│  ┌────────────────────────┐  │    │  ┌───────────────────────┐ │
-│  │ Claude Desktop         │  │    │  │ Next.js Web App       │ │
-│  │ + MCP Server           │  │    │  │ (Vercel)              │ │
-│  └───────────┬────────────┘  │    │  └──────────┬────────────┘ │
-│              │               │    │             │              │
-│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
-│  │ Local RAG Server       │  │    │  │ Next.js API Routes   │ │
-│  │ (Python/FastAPI)       │  │    │  │ (Serverless)         │ │
-│  └───────────┬────────────┘  │    │  └──────────┬───────────┘ │
-│              │               │    │             │              │
-│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
-│  │ LanceDB (Local)        │  │    │  │ Vercel Postgres      │ │
-│  │ C:\BUENATURA\vectors   │  │    │  │ (Metadata + Refs)    │ │
-│  └───────────┬────────────┘  │    │  └──────────┬───────────┘ │
-│              │               │    │             │              │
-│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
-│  │ mem0 Memory            │  │    │  │ Vercel Blob Storage  │ │
-│  │ (Local Persistence)    │  │    │  │ (Vector Cache)       │ │
-│  └────────────────────────┘  │    │  └──────────────────────┘ │
-└──────────────────────────────┘    └─────────────────────────────┘
-              │                                     │
-              │        ┌────────────────┐          │
-              └────────► GitHub Repo    ◄──────────┘
-                       │ Auto Sync      │
-                       │ State Bridge   │
-                       └────────────────┘
+Current production deployment is intentionally lean:
+
+```text
+Client (browser)
+  → Next.js App Router (Vercel)
+      • /login        – public route
+      • /chat         – protected route
+      • /api/login    – issues JWT session cookie
+      • /api/logout   – clears session cookie
+  → Stateless serverless functions
+  → Auth via signed HttpOnly cookie
 ```
 
-## Features
+The RAG pipeline is mocked for now. The chat UI is ready to be plugged into a local or remote RAG backend when you decide on the final engine.
 
-### Dual Mode Operation
+## Project structure (current)
 
-- **Switch seamlessly** between local and web modes
-- **Automatic state sync** via GitHub as single source of truth
-- **Unified memory layer** accessible from both environments
-- **Session continuity** across mode switches
-
-### Local Mode
-
-- Claude Desktop integration via MCP
-- Full data sovereignty (C:\BUENATURA)
-- No cloud dependencies except GitHub sync
-- Local embedding generation
-- Maximum performance
-
-### Web Mode
-
-- Next.js app at flipadonga.com
-- Clerk authentication (user management)
-- Vercel Postgres for metadata
-- Vercel Blob for vector cache
-- Works on any device
-
-### Auto-Sync System
-
-- GitHub Actions sync every 15 minutes
-- Local daemon monitors changes
-- Conflict resolution with timestamp priority
-- Delta sync (only changed files)
-
-## Quick Start
-
-### 1. Local Setup
-
-```powershell
-git clone https://github.com/ValoLoco/sovereign-rag-stack.git
-cd sovereign-rag-stack
-.\scripts\install-local.ps1
-```
-
-### 2. Web Deployment
-
-```bash
-vercel link
-vercel env pull .env.local
-npm run deploy
-```
-
-### 3. Configure Sync
-
-Edit `.env`:
-
-```bash
-GITHUB_TOKEN=your_personal_access_token
-GITHUB_REPO=ValoLoco/sovereign-rag-stack
-SYNC_INTERVAL=900  # 15 minutes
-```
-
-Start sync daemon:
-
-```powershell
-python scripts/sync-daemon.py
-```
-
-## Project Structure
-
-```
+```text
 sovereign-rag-stack/
-├── app/                          # Next.js web application
+├── app/
 │   ├── (auth)/
-│   │   ├── login/
-│   │   └── register/
-│   ├── (dashboard)/
+│   │   └── login/
+│   │       └── page.tsx        # Login screen
+│   ├── (chat)/
+│   │   └── chat/
+│   │       └── page.tsx        # Main chat UI
+│   ├── api/
 │   │   ├── chat/
-│   │   ├── documents/
-│   │   └── memories/
-│   ├── api/                      # Serverless API routes
-│   │   ├── rag/
-│   │   ├── memories/
-│   │   └── sync/
+│   │   │   └── route.ts        # Mock chat endpoint
+│   │   ├── login/
+│   │   │   └── route.ts        # Email + password login
+│   │   └── logout/
+│   │       └── route.ts        # Session clear
+│   ├── globals.css
 │   └── layout.tsx
-├── components/                   # React components
-│   ├── ui/
+├── components/
+│   ├── auth/
+│   │   └── login-form.tsx      # Calls /api/login
 │   ├── chat/
-│   └── documents/
+│   │   ├── chat-header.tsx
+│   │   ├── chat-input.tsx
+│   │   ├── chat-messages.tsx
+│   │   └── sidebar.tsx
+│   └── ui/                     # Tailwind + shadcn style primitives
 ├── lib/
-│   ├── auth.ts                   # Clerk integration
-│   ├── db.ts                     # Vercel Postgres
-│   ├── rag.ts                    # RAG logic
-│   └── sync.ts                   # GitHub sync
-├── local/                        # Local mode components
-│   ├── mcp_server.py             # MCP server for Claude
-│   ├── rag_server.py             # FastAPI RAG server
-│   └── requirements.txt
-├── scripts/
-│   ├── install-local.ps1         # Local setup
-│   ├── sync-daemon.py            # Auto-sync daemon
-│   └── migrate-data.py           # Data migration
-├── sync/
-│   ├── .github/
-│   │   └── workflows/
-│   │       └── auto-sync.yml     # GitHub Actions
-│   └── sync-config.json
-├── shared/                       # Shared state directory
-│   ├── memories/                 # Synced via Git
-│   ├── documents/                # Synced via Git
-│   └── state.json                # Sync metadata
-├── docs/
-│   ├── local-setup.md
-│   ├── web-deployment.md
-│   ├── sync-architecture.md
-│   └── authentication.md
-├── middleware.ts                 # Next.js auth middleware
+│   ├── auth.ts                 # JWT session helpers
+│   ├── rag.ts                  # Placeholder for future RAG bridge
+│   └── utils.ts                # UI utilities
+├── public/
+├── docs/                       # Original design and deployment notes
+│   ├── QUICKSTART.md
+│   ├── FRONTEND.md
+│   ├── DEPLOYMENT.md
+│   └── ...
+├── middleware.ts               # Protects non public routes
 ├── next.config.js
-└── package.json
+├── package.json
+└── tailwind.config.ts
 ```
 
-## Authentication
+Anything mentioning FastAPI, mem0, LanceDB, GitHub sync daemons, or Clerk lives in the `docs/` folder as **design material**, not as a guarantee of what the current codebase implements.
 
-Web mode uses [Clerk](https://clerk.com) for authentication:
+## Auth model
 
-- Email/password signup
-- OAuth (Google, GitHub)
-- Magic links
-- Multi-factor auth
+The web app uses a small custom auth layer instead of a SaaS provider:
 
-Only registered users (you + invited users) can access flipadonga.com.
+- Email allowlist: only `vk.buenatura@gmail.com` and `ag.buenatura@gmail.com` are accepted
+- Shared password: set via environment variable, the same for both users
+- JWT based session stored in an HttpOnly, Secure cookie
+- Middleware gate that redirects unauthenticated users back to `/login`
 
-## Sync Architecture
+### Environment variables (auth)
 
-GitHub repository acts as state bridge between local and web modes:
-
-### What Gets Synced
-
-- Document metadata
-- Memory snapshots
-- Conversation history
-- User preferences
-- Vector indices (compressed)
-
-### Sync Strategy
-
-1. **Local to GitHub**: Daemon commits changes every 15 min
-2. **GitHub to Web**: Vercel webhook triggers on push
-3. **Web to GitHub**: API routes commit via GitHub API
-4. **GitHub to Local**: Daemon pulls changes
-
-### Conflict Resolution
-
-- Timestamp-based priority
-- Last-write-wins for preferences
-- Merge strategy for documents
-- Manual resolution UI for conflicts
-
-## Documentation
-
-- [Local Setup Guide](docs/local-setup.md)
-- [Web Deployment](docs/web-deployment.md)
-- [Sync Architecture](docs/sync-architecture.md)
-- [Authentication](docs/authentication.md)
-- [API Reference](docs/api-reference.md)
-- [Troubleshooting](docs/troubleshooting.md)
-
-## Environment Variables
-
-### Local Mode
+Configure these in Vercel and in your local `.env.local`:
 
 ```bash
-ANTHROPIC_API_KEY=sk-...
-GITHUB_TOKEN=ghp_...
-GITHUB_REPO=ValoLoco/sovereign-rag-stack
-LOCAL_DATA_DIR=C:\BUENATURA
+AUTH_ALLOWED_EMAILS=vk.buenatura@gmail.com,ag.buenatura@gmail.com
+AUTH_PASSWORD=your-strong-shared-password
+AUTH_SECRET=long-random-secret-for-signing
 ```
 
-### Web Mode (Vercel)
+- `AUTH_ALLOWED_EMAILS` is a comma separated list of lowercase emails
+- `AUTH_PASSWORD` is the one password that both of you know
+- `AUTH_SECRET` is a long random value used to sign JWTs
+
+## Running locally
 
 ```bash
-CLERK_SECRET_KEY=sk_...
-POSTGRES_URL=postgres://...
-BLOB_READ_WRITE_TOKEN=vercel_blob_...
-GITHUB_TOKEN=ghp_...
-ANTHROPIC_API_KEY=sk-...
+npm install
+npm run dev
 ```
 
-## Deployment
-
-### Vercel Setup
-
-1. **Connect GitHub repo**
+Make sure you have `.env.local` in the project root:
 
 ```bash
-vercel link
+AUTH_ALLOWED_EMAILS=vk.buenatura@gmail.com,ag.buenatura@gmail.com
+AUTH_PASSWORD=your-strong-shared-password
+AUTH_SECRET=long-random-secret-for-signing
 ```
 
-2. **Configure custom domain**
+Then open `http://localhost:3000/login` and sign in with one of the allowed emails and the shared password.
+
+## Deploying to Vercel
+
+1. Push changes to GitHub
+2. In Vercel, connect the `sovereign-rag-stack` repository if not already connected
+3. Add environment variables in **Settings → Environment Variables**:
 
 ```bash
-vercel domains add flipadonga.com
+AUTH_ALLOWED_EMAILS
+AUTH_PASSWORD
+AUTH_SECRET
 ```
 
-3. **Set environment variables**
+4. Trigger a new deployment
+5. Point your domain from Squarespace to Vercel via DNS records as described in `docs/VERCEL_DEPLOYMENT_CHECKLIST.md` or the Vercel docs
 
-```bash
-vercel env add CLERK_SECRET_KEY
-vercel env add POSTGRES_URL
-vercel env add ANTHROPIC_API_KEY
-```
+Vercel issues HTTPS automatically once DNS is correctly configured.
 
-4. **Deploy**
+## Frontend capabilities
 
-```bash
-vercel --prod
-```
+Even before the RAG backend is wired in, the frontend is structured for:
 
-### Local Daemon
+- Chat centric workflows with a clear hierarchy of conversation, context, and tools
+- File uploads ready to be sent to an embedding or parsing pipeline
+- Toggles for different model backends or connectors
+- A layout that can easily host metadata sidebars, memory viewers, or document panes
 
-Runs as Windows service:
-
-```powershell
-python scripts/sync-daemon.py install
-python scripts/sync-daemon.py start
-```
-
-## Usage Examples
-
-### Local Mode with Claude Desktop
-
-1. Open Claude Desktop
-2. Use MCP tools: `ingest_document`, `search_memories`
-3. Changes auto-sync to GitHub
-4. Available in web mode after sync
-
-### Web Mode on flipadonga.com
-
-1. Login at flipadonga.com
-2. Upload documents via web UI
-3. Chat with RAG system
-4. Changes sync to GitHub
-5. Available locally after daemon pull
-
-### Switching Modes
-
-No configuration needed. Sync happens automatically:
-
-- Work locally → Changes pushed to GitHub → Available on web
-- Work on web → Changes committed → Daemon pulls → Available locally
-
-## Tech Stack
-
-### Frontend
-
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS
-- shadcn/ui components
-
-### Backend
-
-- Next.js API Routes (Vercel Serverless)
-- FastAPI (Local Python server)
-- Vercel Postgres
-- Vercel Blob Storage
-
-### Authentication
-
-- Clerk (web mode)
-- Windows authentication (local mode)
-
-### AI/ML
-
-- mem0 (memory layer)
-- LanceDB (local vectors)
-- sentence-transformers (embeddings)
-- Claude API (LLM)
-
-### DevOps
-
-- GitHub Actions (sync automation)
-- Vercel (hosting + serverless)
-- PowerShell (Windows automation)
-
-## Security
-
-- **Web**: Clerk auth + Vercel security
-- **Local**: Windows ACLs + encrypted storage
-- **Sync**: GitHub encrypted transport
-- **API**: JWT tokens + rate limiting
-
-## References
-
-Key resources for this project:
-
-- [mem0 (Memory Layer)](https://github.com/ValoLoco/mem0.git) - Forked memory management system for persistent AI context
-- [goose](https://github.com/ValoLoco/goose.git) - AI agent toolkit for autonomous task execution
-- [eigent](https://github.com/ValoLoco/eigent.git) - Entity graph and knowledge representation system
-- [skills.sh](https://skills.sh/) - MCP skill building and deployment platform
+All components live in `components/chat` and `components/ui`, following a clean, composable pattern.
 
 ## Roadmap
 
-- [x] Local mode with MCP
-- [x] Web mode with Next.js
-- [x] GitHub sync system
-- [ ] Clerk authentication
-- [ ] Real-time sync (WebSockets)
-- [ ] Mobile app (React Native)
-- [ ] Multi-user collaboration
-- [ ] E2E encryption
+Short term, this repo will evolve along three tracks:
 
-## Contributing
+1. **Backend bridge**
+   - Connect `/api/chat` to a real RAG backend (local or remote)
+   - Add streaming responses
+2. **Memory and documents**
+   - Wire up a document store and memory layer
+   - Add basic CRUD screens for documents and memories
+3. **Hybrid mode**
+   - Re introduce a local Python server and sync conduit
+   - Turn the existing docs into a living spec of the final architecture
 
-Personal sovereignty stack. Fork for your own use.
+The goal is to keep the **web app** production ready while gradually plugging in the deeper sovereignty stack behind it.
+
+## Documentation map
+
+Existing docs are kept as reference material for the full sovereign vision:
+
+- `docs/QUICKSTART.md` – high level options overview
+- `docs/FRONTEND.md` – frontend specific notes
+- `docs/DEPLOYMENT.md` – general deployment thinking
+- `docs/VERCEL_DEPLOYMENT_CHECKLIST.md` – detailed Vercel checklist
+- `docs/sync-architecture.md` – planned sync system between local and web
+
+Treat anything that mentions Python servers, mem0, LanceDB, or Clerk as **design direction** rather than current implementation.
 
 ## License
 
-MIT License - See [LICENSE](LICENSE)
+MIT License – see [LICENSE](LICENSE)
 
 ---
 
-**Built for freedom. Runs anywhere. Syncs everywhere.**
-
-BUENATURA Holdings · 2026
+Built for freedom. Runs on Vercel today. Ready to grow into a full sovereign stack tomorrow.
