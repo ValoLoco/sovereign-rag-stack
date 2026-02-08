@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "buenatura-sovereign-rag": {
+      "command": "C:\\BUENATURA\\venv\\Scripts\\python.exe",
+      "args": ["C:\\BUENATURA\\mcp\\buenatura_rag_server.py"],
+      "env": {
+        "PYTHONPATH": "C:\\BUENATURA",
+        "RAG_DATA_DIR": "C:\\BUENATURA\\knowledge",
+        "RAG_DB_DIR": "C:\\BUENATURA\\mem0\\vectors"
+      }
+    }
+  }
+}
