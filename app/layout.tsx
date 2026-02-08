@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'flipadonga | Sovereign RAG Stack',
   description: 'Private AI assistant with full data sovereignty',
+  icons: {
+    icon: '/Flipadonga_favicon.png',
+  },
 };
 
 export default function RootLayout({
