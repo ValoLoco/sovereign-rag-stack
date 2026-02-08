@@ -1,222 +1,369 @@
 # Sovereign RAG Stack
 
-> Local AI infrastructure with full data sovereignty. Built for Windows with mem0 memory layer, Claude Desktop integration, and local vector storage.
+> Hybrid local/cloud AI infrastructure with full data sovereignty. Run locally on Windows OR access via web on flipadonga.com when traveling.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)](https://vercel.com)
 
 ## Overview
 
-Sovereign RAG Stack gives you complete control over your AI infrastructure. Everything runs locally on your Windows machine except Claude API calls for LLM inference.
+Sovereign RAG Stack runs in two modes with automatic synchronization:
 
-### What You Get
-
-- **Full Data Sovereignty**: All documents, vectors, and conversations stored locally
-- **Persistent Memory**: mem0 layer remembers context across sessions
-- **Local Embeddings**: No external API calls for vector generation
-- **Claude Integration**: Seamless connection via MCP protocol
-- **Windows Native**: Optimized for Windows 10/11
+1. **Local Mode** (Home/Office) - Full sovereignty, Windows native, Claude Desktop integration
+2. **Web Mode** (Travel) - Vercel-hosted at flipadonga.com, authenticated access, cloud-synced state
 
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│      YOUR LOCAL ENVIRONMENT (Windows PC)        │
-│                                                 │
-│  ┌──────────────────────────────────────┐     │
-│  │   Claude Desktop (Windows App)       │     │
-│  │   - Local storage in AppData         │     │
-│  │   - MCP protocol for extensions      │     │
-│  └──────────────┬───────────────────────┘     │
-│                 │ MCP Protocol                 │
-│  ┌──────────────┴───────────────────────┐     │
-│  │   MCP RAG Server (Python)            │     │
-│  │   - Document ingestion               │     │
-│  │   - Semantic search                  │     │
-│  │   - mem0 integration                 │     │
-│  └──────────────┬───────────────────────┘     │
-│                 │                              │
-│  ┌──────────────┴───────────────────────┐     │
-│  │   Local Vector Store (LanceDB)       │     │
-│  │   - C:\\BUENATURA\\vectors\\            │     │
-│  │   - No cloud sync                    │     │
-│  └──────────────────────────────────────┘     │
-│                                                 │
-│  ┌──────────────────────────────────────┐     │
-│  │   mem0 Memory Layer                  │     │
-│  │   - Multi-level memory               │     │
-│  │   - Persistent context               │     │
-│  └──────────────────────────────────────┘     │
-│                                                 │
-│  ┌──────────────────────────────────────┐     │
-│  │   Local Embedding Model              │     │
-│  │   - sentence-transformers            │     │
-│  │   - CPU/GPU inference                │     │
-│  └──────────────────────────────────────┘     │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                  HYBRID ARCHITECTURE                            │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┐    ┌─────────────────────────────┐
+│   LOCAL MODE (Windows PC)    │    │   WEB MODE (flipadonga.com) │
+│                              │    │                             │
+│  ┌────────────────────────┐  │    │  ┌───────────────────────┐ │
+│  │ Claude Desktop         │  │    │  │ Next.js Web App       │ │
+│  │ + MCP Server           │  │    │  │ (Vercel)              │ │
+│  └───────────┬────────────┘  │    │  └──────────┬────────────┘ │
+│              │               │    │             │              │
+│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
+│  │ Local RAG Server       │  │    │  │ Next.js API Routes   │ │
+│  │ (Python/FastAPI)       │  │    │  │ (Serverless)         │ │
+│  └───────────┬────────────┘  │    │  └──────────┬───────────┘ │
+│              │               │    │             │              │
+│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
+│  │ LanceDB (Local)        │  │    │  │ Vercel Postgres      │ │
+│  │ C:\BUENATURA\vectors   │  │    │  │ (Metadata + Refs)    │ │
+│  └───────────┬────────────┘  │    │  └──────────┬───────────┘ │
+│              │               │    │             │              │
+│  ┌───────────▼────────────┐  │    │  ┌──────────▼───────────┐ │
+│  │ mem0 Memory            │  │    │  │ Vercel Blob Storage  │ │
+│  │ (Local Persistence)    │  │    │  │ (Vector Cache)       │ │
+│  └────────────────────────┘  │    │  └──────────────────────┘ │
+└──────────────────────────────┘    └─────────────────────────────┘
+              │                                     │
+              │        ┌────────────────┐          │
+              └────────► GitHub Repo    ◄──────────┘
+                       │ Auto Sync      │
+                       │ State Bridge   │
+                       └────────────────┘
 ```
+
+## Features
+
+### Dual Mode Operation
+
+- **Switch seamlessly** between local and web modes
+- **Automatic state sync** via GitHub as single source of truth
+- **Unified memory layer** accessible from both environments
+- **Session continuity** across mode switches
+
+### Local Mode
+
+- Claude Desktop integration via MCP
+- Full data sovereignty (C:\BUENATURA)
+- No cloud dependencies except GitHub sync
+- Local embedding generation
+- Maximum performance
+
+### Web Mode
+
+- Next.js app at flipadonga.com
+- Clerk authentication (user management)
+- Vercel Postgres for metadata
+- Vercel Blob for vector cache
+- Works on any device
+
+### Auto-Sync System
+
+- GitHub Actions sync every 15 minutes
+- Local daemon monitors changes
+- Conflict resolution with timestamp priority
+- Delta sync (only changed files)
 
 ## Quick Start
 
-### Prerequisites
-
-- Windows 10/11
-- Python 3.11 or higher
-- Claude Desktop app
-- Anthropic API key
-
-### Installation
-
-1. **Clone the repository**
+### 1. Local Setup
 
 ```powershell
 git clone https://github.com/ValoLoco/sovereign-rag-stack.git
 cd sovereign-rag-stack
+.\scripts\install-local.ps1
 ```
 
-2. **Run installation script**
-
-```powershell
-.\install.ps1
-```
-
-3. **Configure environment**
-
-Edit `C:\BUENATURA\.env` with your settings:
+### 2. Web Deployment
 
 ```bash
-ANTHROPIC_API_KEY=your_api_key_here
-RAG_DATA_DIR=C:\BUENATURA\knowledge
-RAG_DB_DIR=C:\BUENATURA\mem0\vectors
+vercel link
+vercel env pull .env.local
+npm run deploy
 ```
 
-4. **Test installation**
+### 3. Configure Sync
+
+Edit `.env`:
+
+```bash
+GITHUB_TOKEN=your_personal_access_token
+GITHUB_REPO=ValoLoco/sovereign-rag-stack
+SYNC_INTERVAL=900  # 15 minutes
+```
+
+Start sync daemon:
 
 ```powershell
-python test_setup.py
+python scripts/sync-daemon.py
 ```
-
-5. **Start using with Claude Desktop**
-
-Open Claude Desktop. The MCP server connects automatically.
-
-## Documentation
-
-- [Installation Guide](docs/installation.md) - Step-by-step setup
-- [Configuration](docs/configuration.md) - Environment variables and settings
-- [MCP Server](docs/mcp-server.md) - Server architecture and tools
-- [Memory Layer](docs/memory.md) - How mem0 works
-- [Usage Examples](docs/examples.md) - Common workflows
-- [Troubleshooting](docs/troubleshooting.md) - Common issues
 
 ## Project Structure
 
 ```
 sovereign-rag-stack/
-├── mcp/
-│   ├── buenatura_rag_server.py  # Main MCP server
-│   └── requirements.txt         # Python dependencies
+├── app/                          # Next.js web application
+│   ├── (auth)/
+│   │   ├── login/
+│   │   └── register/
+│   ├── (dashboard)/
+│   │   ├── chat/
+│   │   ├── documents/
+│   │   └── memories/
+│   ├── api/                      # Serverless API routes
+│   │   ├── rag/
+│   │   ├── memories/
+│   │   └── sync/
+│   └── layout.tsx
+├── components/                   # React components
+│   ├── ui/
+│   ├── chat/
+│   └── documents/
+├── lib/
+│   ├── auth.ts                   # Clerk integration
+│   ├── db.ts                     # Vercel Postgres
+│   ├── rag.ts                    # RAG logic
+│   └── sync.ts                   # GitHub sync
+├── local/                        # Local mode components
+│   ├── mcp_server.py             # MCP server for Claude
+│   ├── rag_server.py             # FastAPI RAG server
+│   └── requirements.txt
 ├── scripts/
-│   ├── install.ps1              # Windows installation
-│   ├── test_setup.py            # Setup validation
-│   └── ingest_knowledge.py      # Batch document ingestion
+│   ├── install-local.ps1         # Local setup
+│   ├── sync-daemon.py            # Auto-sync daemon
+│   └── migrate-data.py           # Data migration
+├── sync/
+│   ├── .github/
+│   │   └── workflows/
+│   │       └── auto-sync.yml     # GitHub Actions
+│   └── sync-config.json
+├── shared/                       # Shared state directory
+│   ├── memories/                 # Synced via Git
+│   ├── documents/                # Synced via Git
+│   └── state.json                # Sync metadata
 ├── docs/
-│   ├── installation.md
-│   ├── configuration.md
-│   ├── mcp-server.md
-│   ├── memory.md
-│   ├── examples.md
-│   └── troubleshooting.md
-├── config/
-│   ├── claude_desktop_config.json  # Claude Desktop MCP config
-│   └── .env.example                # Environment template
-├── README.md
-└── LICENSE
+│   ├── local-setup.md
+│   ├── web-deployment.md
+│   ├── sync-architecture.md
+│   └── authentication.md
+├── middleware.ts                 # Next.js auth middleware
+├── next.config.js
+└── package.json
 ```
 
-## Key Features
+## Authentication
 
-### Local Vector Storage
+Web mode uses [Clerk](https://clerk.com) for authentication[web:24]:
 
-- **LanceDB** for fast, embedded vector search
-- No external dependencies or cloud services
-- Direct file system storage
+- Email/password signup
+- OAuth (Google, GitHub)
+- Magic links
+- Multi-factor auth
 
-### mem0 Memory Layer
+Only registered users (you + invited users) can access flipadonga.com.
 
-- Persistent memory across sessions
-- Multi-level memory (user, session, agent)
-- Automatic context extraction
-- Semantic similarity search
+## Sync Architecture
 
-### MCP Tools
+GitHub repository acts as state bridge between local and web modes:
 
-Available tools in Claude Desktop:
+### What Gets Synced
 
-- `ingest_document` - Add documents to memory
-- `search_memories` - Semantic search across knowledge base
-- `get_all_memories` - Retrieve all stored memories
-- `add_conversation` - Store conversations persistently
+- Document metadata
+- Memory snapshots
+- Conversation history
+- User preferences
+- Vector indices (compressed)
 
-### Local Embeddings
+### Sync Strategy
 
-- sentence-transformers models
-- No API calls for embedding generation
-- CPU and GPU support
+1. **Local to GitHub**: Daemon commits changes every 15 min
+2. **GitHub to Web**: Vercel webhook triggers on push
+3. **Web to GitHub**: API routes commit via GitHub API
+4. **GitHub to Local**: Daemon pulls changes
 
-## Advanced Usage
+### Conflict Resolution
 
-### Batch Document Ingestion
+- Timestamp-based priority
+- Last-write-wins for preferences
+- Merge strategy for documents
+- Manual resolution UI for conflicts
+
+## Documentation
+
+- [Local Setup Guide](docs/local-setup.md)
+- [Web Deployment](docs/web-deployment.md)
+- [Sync Architecture](docs/sync-architecture.md)
+- [Authentication](docs/authentication.md)
+- [API Reference](docs/api-reference.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+## Environment Variables
+
+### Local Mode
+
+```bash
+ANTHROPIC_API_KEY=sk-...
+GITHUB_TOKEN=ghp_...
+GITHUB_REPO=ValoLoco/sovereign-rag-stack
+LOCAL_DATA_DIR=C:\BUENATURA
+```
+
+### Web Mode (Vercel)
+
+```bash
+CLERK_SECRET_KEY=sk_...
+POSTGRES_URL=postgres://...
+BLOB_READ_WRITE_TOKEN=vercel_blob_...
+GITHUB_TOKEN=ghp_...
+ANTHROPIC_API_KEY=sk-...
+```
+
+## Deployment
+
+### Vercel Setup
+
+1. **Connect GitHub repo**
+
+```bash
+vercel link
+```
+
+2. **Configure custom domain**
+
+```bash
+vercel domains add flipadonga.com
+```
+
+3. **Set environment variables**
+
+```bash
+vercel env add CLERK_SECRET_KEY
+vercel env add POSTGRES_URL
+vercel env add ANTHROPIC_API_KEY
+```
+
+4. **Deploy**
+
+```bash
+vercel --prod
+```
+
+### Local Daemon
+
+Runs as Windows service:
 
 ```powershell
-python scripts/ingest_knowledge.py
+python scripts/sync-daemon.py install
+python scripts/sync-daemon.py start
 ```
 
-Ingests all documents from `C:\BUENATURA\knowledge`
+## Usage Examples
 
-### Custom Memory Queries
+### Local Mode with Claude Desktop
 
-```python
-from mem0 import Memory
+1. Open Claude Desktop
+2. Use MCP tools: `ingest_document`, `search_memories`
+3. Changes auto-sync to GitHub
+4. Available in web mode after sync
 
-memory = Memory(config={...})
-results = memory.search(query="your query", user_id="valentin")
-```
+### Web Mode on flipadonga.com
 
-### LangGraph Integration
+1. Login at flipadonga.com
+2. Upload documents via web UI
+3. Chat with RAG system
+4. Changes sync to GitHub
+5. Available locally after daemon pull
 
-See [docs/examples.md](docs/examples.md) for LangGraph workflow examples.
+### Switching Modes
 
-## Reference Repositories
+No configuration needed. Sync happens automatically:
 
-This project builds upon:
+- Work locally → Changes pushed to GitHub → Available on web
+- Work on web → Changes committed → Daemon pulls → Available locally
 
-- [mem0ai/mem0](https://github.com/mem0ai/mem0) - Memory layer foundation
-- Your fork: [ValoLoco/mem0](https://github.com/ValoLoco/mem0)
+## Tech Stack
 
-## Contributing
+### Frontend
 
-This is a personal sovereignty stack. Fork and customize for your needs.
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
 
-## License
+### Backend
 
-MIT License - See [LICENSE](LICENSE) file
+- Next.js API Routes (Vercel Serverless)
+- FastAPI (Local Python server)
+- Vercel Postgres
+- Vercel Blob Storage
 
-## Support
+### Authentication
 
-For issues or questions:
-1. Check [docs/troubleshooting.md](docs/troubleshooting.md)
-2. Review [mem0 documentation](https://docs.mem0.ai)
-3. Open an issue in this repository
+- Clerk (web mode)
+- Windows authentication (local mode)
+
+### AI/ML
+
+- mem0 (memory layer)
+- LanceDB (local vectors)
+- sentence-transformers (embeddings)
+- Claude API (LLM)
+
+### DevOps
+
+- GitHub Actions (sync automation)
+- Vercel (hosting + serverless)
+- PowerShell (Windows automation)
+
+## Security
+
+- **Web**: Clerk auth + Vercel security
+- **Local**: Windows ACLs + encrypted storage
+- **Sync**: GitHub encrypted transport
+- **API**: JWT tokens + rate limiting
 
 ## Roadmap
 
-- [ ] Perplexity Space migration tool
-- [ ] LangGraph workflow library
-- [ ] Web dashboard for memory management
-- [ ] Docker containerization option
-- [ ] Multi-user support
+- [x] Local mode with MCP
+- [x] Web mode with Next.js
+- [x] GitHub sync system
+- [ ] Clerk authentication
+- [ ] Real-time sync (WebSockets)
+- [ ] Mobile app (React Native)
+- [ ] Multi-user collaboration
+- [ ] E2E encryption
+
+## Contributing
+
+Personal sovereignty stack. Fork for your own use.
+
+## License
+
+MIT License - See [LICENSE](LICENSE)
 
 ---
 
-**Built with sovereignty principles for BUENATURA Holdings**
+**Built for freedom. Runs anywhere. Syncs everywhere.**
+
+BUENATURA Holdings · 2026
