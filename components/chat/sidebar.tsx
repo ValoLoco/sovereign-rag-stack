@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, X, MessageSquare, FileText, Brain } from 'lucide-react';
+import { Settings, X, MessageSquare, FileText, Brain, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,9 @@ interface SidebarProps {
 
 const models = [
   { id: 'ollama/llama3.3', name: 'Llama 3.3', provider: 'Ollama' },
+  { id: 'ollama/qwen2.5-coder', name: 'Qwen 2.5 Coder', provider: 'Ollama' },
   { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
+  { id: 'openai/gpt-4', name: 'GPT-4', provider: 'OpenAI' },
 ];
 
 export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: SidebarProps) {
@@ -113,6 +115,22 @@ export function Sidebar({ isOpen, onClose, selectedModel, onModelChange }: Sideb
                 >
                   <Brain className="h-4 w-4" />
                   Memories
+                </Button>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-3">
+                Agent Skills
+              </h3>
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2"
+                  onClick={() => window.open('https://skills.sh/vercel-labs/skills', '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Skills Search
                 </Button>
               </div>
             </section>
