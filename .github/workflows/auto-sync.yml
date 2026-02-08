@@ -1,0 +1,25 @@
+name: Auto Sync
+
+on:
+  push:
+    branches: [sync]
+    paths:
+      - 'shared/**'
+
+jobs:
+  sync-to-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Trigger Vercel sync
+        run: |
+          curl -X POST https://flipadonga.com/api/sync/webhook \
+            -H "Authorization: Bearer ${{ secrets.SYNC_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"source": "github-action"}'
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Sync to Vercel failed!"
