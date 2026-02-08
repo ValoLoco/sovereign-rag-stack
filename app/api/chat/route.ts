@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createProvider, MultiModelOrchestrator } from '@/lib/llm-providers';
 import type { LLMMessage } from '@/lib/llm-providers';
+import { searchDocuments } from '@/lib/documents';
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +11,8 @@ export async function POST(request: Request) {
       mode = 'chat', 
       workerModels = [], 
       ralphIterations = 3,
-      settings = {}
+      settings = {},
+      ragEnabled = false
     } = await request.json();
 
     const ollamaEndpoint = settings.ollamaEndpointOverride || process.env.OLLAMA_ENDPOINT || 'http://localhost:11434';
@@ -23,9 +25,37 @@ export async function POST(request: Request) {
 
     console.log('[API] Using endpoint:', ollamaEndpoint.substring(0, 30) + '...');
     console.log('[API] Model requested:', model);
+    console.log('[API] RAG enabled:', ragEnabled);
+
+    let contextMessage = message;
+    let sources: Array<{ docId: string; filename: string; snippet: string }> = [];
+
+    if (ragEnabled) {
+      try {
+        const results = await searchDocuments(message, 3, ollamaEndpoint);
+        
+        if (results.length > 0) {
+          console.log('[API] Found', results.length, 'relevant documents');
+          
+          const context = results
+            .map((r, i) => `[Document ${i + 1}: ${r.document.filename}]\n${r.document.content.substring(0, 1000)}...`)
+            .join('\n\n');
+
+          contextMessage = `Context from uploaded documents:\n\n${context}\n\nUser question: ${message}`;
+          
+          sources = results.map((r) => ({
+            docId: r.document.id,
+            filename: r.document.filename,
+            snippet: r.document.content.substring(0, 200) + '...',
+          }));
+        }
+      } catch (error) {
+        console.error('[API] RAG search error:', error);
+      }
+    }
 
     const messages: LLMMessage[] = [
-      { role: 'user', content: message },
+      { role: 'user', content: contextMessage },
     ];
 
     if (mode === 'chat') {
@@ -36,6 +66,7 @@ export async function POST(request: Request) {
         answer: response.content,
         model: response.model,
         usage: response.usage,
+        sources: sources.length > 0 ? sources : undefined,
       });
     }
 
@@ -44,7 +75,7 @@ export async function POST(request: Request) {
       const workers = workerModels.map((m: string) => createProvider(m, config));
       
       const orchestrator = new MultiModelOrchestrator(chatProvider, workers);
-      const workerResults = await orchestrator.runWorkers(message);
+      const workerResults = await orchestrator.runWorkers(contextMessage);
       
       return NextResponse.json({
         answer: workerResults[0].content,
@@ -53,13 +84,14 @@ export async function POST(request: Request) {
           content: r.content,
           usage: r.usage,
         })),
+        sources: sources.length > 0 ? sources : undefined,
       });
     }
 
     if (mode === 'ralph') {
       const provider = createProvider(model, config);
       const orchestrator = new MultiModelOrchestrator(provider);
-      const iterations = await orchestrator.ralphLoop(message, ralphIterations);
+      const iterations = await orchestrator.ralphLoop(contextMessage, ralphIterations);
       
       return NextResponse.json({
         answer: iterations[iterations.length - 1].content,
@@ -67,6 +99,7 @@ export async function POST(request: Request) {
           content: r.content,
           model: r.model,
         })),
+        sources: sources.length > 0 ? sources : undefined,
       });
     }
 
